@@ -5,6 +5,6 @@ WORKDIR /app
 COPY ../../requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY consumer.py .
+COPY train_model.py .
 
-CMD ["python", "consumer.py"]
+CMD ["python", "train_model.py"]

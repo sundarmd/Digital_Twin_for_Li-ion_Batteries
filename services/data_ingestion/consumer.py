@@ -1,12 +1,15 @@
 import json
 import os
+import time
 from kafka import KafkaConsumer
 from datetime import datetime
 import logging
 import psycopg2
 from psycopg2.extras import Json
+from kafka.errors import KafkaError
+from Digital_Twin_for_Li-ion_Batteries.config import *
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)
 
 def validate_battery_data(data):
@@ -36,48 +39,91 @@ def preprocess_data(data):
     
     return data
 
-def store_data(conn, data):
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO battery_data (
-                voltage, current, temperature, current_charge, voltage_charge,
-                time, capacity, id_cycle, type, ambient_temperature, year,
-                battery_id, power, energy, timestamp, raw_data
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (
-            data['Voltage_measured'], data['Current_measured'], data['Temperature_measured'],
-            data['Current_charge'], data['Voltage_charge'], data['Time'], data['Capacity'],
-            data['id_cycle'], data['type'], data['ambient_temperature'], data['time'],
-            data['Battery'], data['power_W'], data['energy_Wh'], data['timestamp'],
-            Json(data)
-        ))
-    conn.commit()
+def health_check():
+    try:
+        # Check Kafka connection
+        consumer = KafkaConsumer(
+            bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS.split(','),
+            group_id='health_check',
+            consumer_timeout_ms=5000
+        )
+        consumer.close()
+
+        # Check database connection
+        conn = psycopg2.connect(DATABASE_URL)
+        conn.close()
+
+        return True
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return False
 
 def main():
-    consumer = KafkaConsumer(
-        'battery-data',
-        bootstrap_servers=os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092').split(','),
-        auto_offset_reset='earliest',
-        enable_auto_commit=True,
-        group_id='battery-data-consumer',
-        value_deserializer=lambda x: json.loads(x.decode('utf-8'))
-    )
+    while True:
+        try:
+            consumer = KafkaConsumer(
+                KAFKA_TOPIC_BATTERY_DATA,
+                bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS.split(','),
+                value_deserializer=lambda x: json.loads(x.decode('utf-8')),
+                auto_offset_reset='earliest',
+                enable_auto_commit=False
+            )
 
-    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+            conn = psycopg2.connect(DATABASE_URL)
+            cur = conn.cursor()
 
-    try:
-        for message in consumer:
-            data = message.value
-            if validate_battery_data(data):
-                processed_data = preprocess_data(data)
-                store_data(conn, processed_data)
-                logger.info(f"Processed and stored data for battery {processed_data['Battery']}")
-            else:
-                logger.warning(f"Invalid data received: {data}")
-    except Exception as e:
-        logger.error(f"An error occurred: {str(e)}")
-    finally:
-        conn.close()
+            last_health_check = time.time()
+
+            for message in consumer:
+                try:
+                    data = message.value
+                    if not validate_battery_data(data):
+                        logger.error(f"Invalid data received: {data}")
+                        continue
+
+                    processed_data = preprocess_data(data)
+
+                    cur.execute("""
+                        INSERT INTO battery_data (
+                            battery_id, voltage_measured, current_measured, temperature_measured,
+                            current_charge, voltage_charge, time, capacity, id_cycle, type,
+                            ambient_temperature, year, power_W, energy_Wh, timestamp
+                        ) VALUES (
+                            %(Battery)s, %(Voltage_measured)s, %(Current_measured)s, %(Temperature_measured)s,
+                            %(Current_charge)s, %(Voltage_charge)s, %(Time)s, %(Capacity)s, %(id_cycle)s, %(type)s,
+                            %(ambient_temperature)s, %(time)s, %(power_W)s, %(energy_Wh)s, %(timestamp)s
+                        )
+                    """, processed_data)
+                    conn.commit()
+                    logger.info(f"Processed and stored data for battery {data['Battery']}")
+                    consumer.commit()
+
+                    # Perform health check at regular intervals
+                    if time.time() - last_health_check > HEALTH_CHECK_INTERVAL:
+                        if not health_check():
+                            raise Exception("Health check failed")
+                        last_health_check = time.time()
+
+                except Exception as e:
+                    logger.error(f"Error processing message: {e}")
+                    conn.rollback()
+
+        except KafkaError as e:
+            logger.error(f"Kafka error: {e}")
+        except psycopg2.Error as e:
+            logger.error(f"Database error: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+        finally:
+            if cur:
+                cur.close()
+            if conn:
+                conn.close()
+            if consumer:
+                consumer.close()
+
+        logger.info("Restarting consumer after error...")
+        time.sleep(10)  # Wait before attempting to reconnect
 
 if __name__ == "__main__":
     main()
