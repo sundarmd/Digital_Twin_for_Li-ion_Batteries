@@ -1,4 +1,4 @@
-# Battery Digital Twin Project
+# Digital Twin for Li-ion Batteries
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
