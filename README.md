@@ -126,6 +126,9 @@ graph TD
    terraform apply
    ```
 
+   ![image](https://github.com/user-attachments/assets/be5c7833-d896-45a8-8542-8aa0887feb20)
+
+
 4. Build and push Docker images for the microservices:
    ```
    cd ../services
