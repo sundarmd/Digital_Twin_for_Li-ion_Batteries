@@ -1,6 +1,5 @@
 import os
 import configparser
-from pathlib import Path
 
 # Get the directory of the current file
 current_dir = Path(__file__).resolve().parent
@@ -19,17 +18,9 @@ DATABASE_URL = os.environ.get('DATABASE_URL', config['Database']['DATABASE_URL']
 
 # Kafka
 KAFKA_BOOTSTRAP_SERVERS = os.environ.get('KAFKA_BOOTSTRAP_SERVERS', config['Kafka']['KAFKA_BOOTSTRAP_SERVERS'])
-KAFKA_TOPIC_BATTERY_DATA = os.environ.get('KAFKA_TOPIC_BATTERY_DATA', config['Kafka']['KAFKA_TOPIC_BATTERY_DATA'])
-KAFKA_TOPIC_ANALYSIS_RESULTS = os.environ.get('KAFKA_TOPIC_ANALYSIS_RESULTS', config['Kafka']['KAFKA_TOPIC_ANALYSIS_RESULTS'])
-KAFKA_TOPIC_DIGITAL_TWIN = os.environ.get('KAFKA_TOPIC_DIGITAL_TWIN', config['Kafka']['KAFKA_TOPIC_DIGITAL_TWIN'])
 
 # AWS
-AWS_REGION = os.environ.get('AWS_REGION', config['AWS']['AWS_REGION'])
-MSK_CLUSTER_ARN = os.environ.get('MSK_CLUSTER_ARN', config['AWS']['MSK_CLUSTER_ARN'])
-
-# API
-API_HOST = os.environ.get('API_HOST', config['API']['API_HOST'])
-API_PORT = int(os.environ.get('API_PORT', config['API']['API_PORT']))
+AWS_REGION = os.environ.get('AWS_REGION', config['AWS']['REGION'])
 
 # Machine Learning
 MODEL_PATH_LSTM = os.environ.get('MODEL_PATH_LSTM', config['MachineLearning']['MODEL_PATH_LSTM'])

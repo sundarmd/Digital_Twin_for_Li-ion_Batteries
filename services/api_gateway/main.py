@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import psycopg2
-import os
-from datetime import datetime, timedelta
+from datetime import datetime
+from config import DATABASE_URL, SECRET_KEY
 
 app = FastAPI()
 
@@ -18,7 +18,7 @@ class BatteryStatus(BaseModel):
     timestamp: datetime
 
 def get_db_connection():
-    return psycopg2.connect(os.environ['DATABASE_URL'])
+    return psycopg2.connect(DATABASE_URL)
 
 @app.get("/battery/{battery_id}/status")
 async def get_battery_status(battery_id: str, token: str = Depends(oauth2_scheme)):
