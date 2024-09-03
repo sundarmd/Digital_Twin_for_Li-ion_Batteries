@@ -2,13 +2,17 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.exceptions import NotFittedError
 import joblib
 import psycopg2
 import os
 import sys
-from sklearn.exceptions import NotFittedError
-import numpy as np
-from Digital_Twin_for_Li-ion_Batteries.config import *
+import logging
+from Digital_Twin_for_Li-ion_Batteries.config import (
+    DATABASE_URL,
+    LOG_LEVEL,
+    MODEL_PATH_RF
+)
 
 logging.basicConfig(level=LOG_LEVEL)
 logger = logging.getLogger(__name__)

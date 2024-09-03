@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: battery-digital-twin-config
-data:
-  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"

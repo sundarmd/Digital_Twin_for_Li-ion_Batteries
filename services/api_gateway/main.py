@@ -1,92 +1,36 @@
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import psycopg2
-from datetime import datetime, timedelta
-from Digital_Twin_for_Li_ion_Batteries.config import DATABASE_URL, SECRET_KEY
+import joblib
+import numpy as np
+from Digital_Twin_for_Li-ion_Batteries.config import MODEL_PATH_RF
 
 app = FastAPI()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-class BatteryStatus(BaseModel):
-    battery_id: str
-    voltage: float
-    current: float
-    temperature: float
-    capacity: float
-    timestamp: datetime
-
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
-
-@app.get("/battery/{battery_id}/status")
-async def get_battery_status(battery_id: str, token: str = Depends(oauth2_scheme)):
-    conn = None
+@app.get("/battery/{battery_id}")
+def get_battery_data(battery_id: int):
+    db = SessionLocal()
     try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT voltage, current, temperature, capacity, timestamp
-            FROM battery_data
-            WHERE battery_id = %s
-            ORDER BY timestamp DESC
-            LIMIT 1
-        """, (battery_id,))
-        result = cur.fetchone()
-        cur.close()
-
-        if result is None:
-            raise HTTPException(status_code=404, detail="Battery not found")
-
-        return BatteryStatus(
-            battery_id=battery_id,
-            voltage=result[0],
-            current=result[1],
-            temperature=result[2],
-            capacity=result[3],
-            timestamp=result[4]
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        battery_data = db.query(BatteryData).filter(BatteryData.id == battery_id).first()
+        if battery_data is None:
+            raise HTTPException(status_code=404, detail="Battery data not found")
+        return {
+            "id": battery_data.id,
+            "timestamp": battery_data.timestamp,
+            "voltage": battery_data.voltage,
+            "current": battery_data.current,
+            "temperature": battery_data.temperature,
+            "state_of_charge": battery_data.state_of_charge,
+            "capacity": battery_data.capacity
+        }
     finally:
-        if conn:
-            conn.close()
+        db.close()
 
-@app.get("/battery/{battery_id}/history")
-async def get_battery_history(battery_id: str, days: int = 7, token: str = Depends(oauth2_scheme)):
-    conn = None
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("""
-            SELECT voltage, current, temperature, capacity, timestamp
-            FROM battery_data
-            WHERE battery_id = %s AND timestamp > %s
-            ORDER BY timestamp ASC
-        """, (battery_id, datetime.now() - timedelta(days=days)))
-        results = cur.fetchall()
-        cur.close()
-
-        if not results:
-            raise HTTPException(status_code=404, detail="No data found for the specified battery and time range")
-
-        return [
-            BatteryStatus(
-                battery_id=battery_id,
-                voltage=row[0],
-                current=row[1],
-                temperature=row[2],
-                capacity=row[3],
-                timestamp=row[4]
-            )
-            for row in results
-        ]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        if conn:
-            conn.close()
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
