@@ -9,7 +9,7 @@ ECR_REPO_NAME="battery-digital-twin"
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
 # Build and push Docker images for each service
-services=("data_ingestion" "real_time_analytics" "ml_pipeline" "api_gateway" "digital_twin_aggregator")
+services=("api_gateway" "data_generator" "data_ingestion" "digital_twin_aggregator" "ml_pipeline" "real_time_analytics")
 
 for service in "${services[@]}"
 do

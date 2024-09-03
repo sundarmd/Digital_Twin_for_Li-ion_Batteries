@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: real-time-analytics
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: real-time-analytics
+  template:
+    metadata:
+      labels:
+        app: real-time-analytics
+    spec:
+      containers:
+      - name: real-time-analytics
+        image: your-registry/real-time-analytics:latest
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "kafka-service:9092"

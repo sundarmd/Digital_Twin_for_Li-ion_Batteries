@@ -2,8 +2,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import psycopg2
-from datetime import datetime
-from config import DATABASE_URL, SECRET_KEY
+from datetime import datetime, timedelta
+from Digital_Twin_for_Li_ion_Batteries.config import DATABASE_URL, SECRET_KEY
 
 app = FastAPI()
 
