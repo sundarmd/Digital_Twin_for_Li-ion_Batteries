@@ -132,3 +132,26 @@ variable "common_tags" {
     Environment = "Development"
   }
 }
+
+# Add these to your existing variables.tf file
+
+variable "ec2_ami" {
+  description = "AMI ID for the EC2 instance"
+  default     = "ami-0989fb15ce71ba39e"  # This is an Amazon Linux 2 AMI in eu-north-1. Please verify and update as needed.
+}
+
+variable "ec2_instance_type" {
+  description = "Instance type for the EC2"
+  default     = "t3.micro"
+}
+
+variable "ec2_key_pair_name" {
+  description = "Name of the key pair to use for SSH access to the EC2 instance"
+  type        = string
+}
+
+variable "s3_bucket_name" {
+  description = "Name of the S3 bucket containing the certificates"
+  type        = string
+  default     = "digitaltwinbattery"
+}

@@ -399,3 +399,94 @@ provider "aws" {
   output "rds_endpoint" {
     value = aws_db_instance.main.endpoint
   }
+
+  # Add this to your existing main.tf file
+
+# EC2 Instance
+resource "aws_instance" "battery_simulator" {
+  ami           = var.ec2_ami
+  instance_type = var.ec2_instance_type
+  subnet_id     = aws_subnet.public[0].id
+  key_name      = var.ec2_key_pair_name
+
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+
+  iam_instance_profile = aws_iam_instance_profile.ec2_s3_profile.name
+
+  tags = {
+    Name = "Battery Simulator EC2"
+  }
+}
+
+# Security group for EC2
+resource "aws_security_group" "ec2_sg" {
+  name        = "battery_simulator_sg"
+  description = "Security group for Battery Simulator EC2"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# IAM role for EC2 to access S3
+resource "aws_iam_role" "ec2_s3_access_role" {
+  name = "ec2_s3_access_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# IAM policy for S3 access
+resource "aws_iam_role_policy" "s3_access_policy" {
+  name = "s3_access_policy"
+  role = aws_iam_role.ec2_s3_access_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# IAM instance profile
+resource "aws_iam_instance_profile" "ec2_s3_profile" {
+  name = "ec2_s3_profile"
+  role = aws_iam_role.ec2_s3_access_role.name
+}
+
+# Output the public IP of the EC2 instance
+output "ec2_public_ip" {
+  value = aws_instance.battery_simulator.public_ip
+}
