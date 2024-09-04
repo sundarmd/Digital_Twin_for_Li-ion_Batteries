@@ -1,5 +1,7 @@
 # Digital Twin for Li-ion Batteries
 
+## This work is in progress - ETA - 09.09.2024
+
 ## Table of Contents
 1. [Project Overview](#project-overview)
 2. [Architecture](#architecture)
