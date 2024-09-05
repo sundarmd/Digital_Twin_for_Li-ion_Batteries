@@ -1,15 +1,20 @@
 import time
 import json
 import random
+import logging
 from datetime import datetime
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 # AWS IoT configuration
-ENDPOINT = "your-iot-endpoint.iot.us-west-2.amazonaws.com"
-CLIENT_ID = "battery_simulator"
-PATH_TO_CERT = "path/to/certificate.pem.crt"
-PATH_TO_KEY = "path/to/private.pem.key"
-PATH_TO_ROOT = "path/to/root.pem"
+ENDPOINT = "XXXXXXXXXXXXXXXXXXXXXX.iot.eu-north-1.amazonaws.com"
+CLIENT_ID = "batterydatasimulator"
+PATH_TO_CERT = "bdd71XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX9454814b3-certificate.pem.crt"
+PATH_TO_KEY = "bdd71eXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX54814b3-private.pem.key"
+PATH_TO_ROOT = "XXXXXXXXXXXXXXX.pem"
 TOPIC = "battery/data"
 
 # Battery simulation parameters
@@ -28,6 +33,10 @@ def create_mqtt_client():
     mqtt_client.configureDrainingFrequency(2)
     mqtt_client.configureConnectDisconnectTimeout(10)
     mqtt_client.configureMQTTOperationTimeout(5)
+    
+    # Enable debugging
+    mqtt_client.enableMetricsCollection()
+    
     return mqtt_client
 
 def simulate_battery_data(cycle, measurement, cumulated_time):
@@ -82,18 +91,22 @@ def run_simulator(mqtt_client):
 
         message = json.dumps(aggregated_data)
         mqtt_client.publish(TOPIC, message, 1)
-        print(f"Published aggregated cycle data: {message}")
+        logger.debug(f"Published aggregated cycle data: {message}")
         
         cycle += 1
 
 if __name__ == "__main__":
     mqtt_client = create_mqtt_client()
-    mqtt_client.connect()
-    print("MQTT client connected")
-    try:
-        run_simulator(mqtt_client)
-    except KeyboardInterrupt:
-        print("Simulator stopped")
-    finally:
-        mqtt_client.disconnect()
-        print("MQTT client disconnected")
+    logger.info("Attempting to connect...")
+    connection_success = mqtt_client.connect()
+    if connection_success:
+        logger.info("MQTT client connected successfully")
+        try:
+            run_simulator(mqtt_client)
+        except KeyboardInterrupt:
+            logger.info("Simulator stopped")
+        finally:
+            mqtt_client.disconnect()
+            logger.info("MQTT client disconnected")
+    else:
+        logger.error("Failed to connect. Please check your credentials and network settings.")
