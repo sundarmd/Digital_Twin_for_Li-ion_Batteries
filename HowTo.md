@@ -4,4 +4,4 @@
 
 ### Make sure your EC2 instance has all these files
 
-![image](https://github.com/user-attachments/assets/811d6eff-030b-4cfe-8b86-d22c1587bb1f)
+![image](https://github.com/user-attachments/assets/ceffb2c0-63c0-43ab-9976-96c781cf254b)
