@@ -8,7 +8,8 @@
 
 ### Train the model with historical data stored in S3 bucket and Deploy it to the endpoint
 
-![image](https://github.com/user-attachments/assets/06b4d2e3-8db4-4994-81b7-be4bc2be24fd)
+![image](https://github.com/user-attachments/assets/e4a9368c-f0f6-4874-b808-dac197a5c890)
+
 
 ### Move the model.tar.gz file to your EC2 instance from the corresponding output folder of the sagemaker instance and unzip it to obtain the model.pth file
 
