@@ -6,10 +6,10 @@ import numpy as np
 import pandas as pd
 
 # AWS IoT configuration
-ENDPOINT = "a14bm3z8qkqt69-ats.iot.eu-north-1.amazonaws.com"
+ENDPOINT = "a14XXXXXXXXXXXXX69-ats.iot.eu-north-1.amazonaws.com"
 CLIENT_ID = "batterydatasimulator"
-PATH_TO_CERT = "bdd71e13313d037b336a63e4221b9ed6d563e4914cc7236e22030499454814b3-certificate.pem.crt"
-PATH_TO_KEY = "bdd71e13313d037b336a63e4221b9ed6d563e4914cc7236e22030499454814b3-private.pem.key"
+PATH_TO_CERT = "bdd71e1XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXcc7236e22030499454814b3-certificate.pem.crt"
+PATH_TO_KEY = "bdd71e13XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX36e22030499454814b3-private.pem.key"
 PATH_TO_ROOT = "AmazonRootCA1.pem"
 TOPIC = "battery/data"
 
