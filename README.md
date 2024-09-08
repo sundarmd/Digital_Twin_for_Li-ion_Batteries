@@ -44,8 +44,8 @@ The project utilizes a serverless architecture on AWS, leveraging the following 
 
 | Component | Purpose | Data Sources | Data Sent |
 |-----------|---------|--------------|-----------|
-| IoT Devices / Data Simulator | Simulate real-time battery data | Battery sensors | Raw battery data (voltage, current, temperature, etc.) via MQTT |
-| AWS IoT Core | Manage IoT device connections and data ingestion | IoT Devices | Raw battery data to EC2 |
+| IoT Devices / Data Simulator | Simulate real-time battery data | Battery sensors/ scripts to simulate sensor data | Raw battery data (voltage, current, temperature, etc.) via MQTT |
+| AWS IoT Core | Manage IoT device connections and data ingestion | IoT Devices/ scripts simulating IoT devices | Raw battery data to EC2 |
 | EC2 - Data Processor | Process and transform raw data | AWS IoT Core | Processed data to Redshift |
 | Amazon Redshift | Store processed data | EC2 | Processed data to QuickSight |
 | Amazon SageMaker | Train and host ML models | S3 (training data) | ML model predictions to EC2 |
@@ -67,8 +67,7 @@ The project utilizes a serverless architecture on AWS, leveraging the following 
 
 ![image](https://github.com/user-attachments/assets/e4a9368c-f0f6-4874-b808-dac197a5c890)
 
-
-### Move the model.tar.gz file to your EC2 instance from the corresponding output folder of the sagemaker instance and unzip it to obtain the model.pth file in case you want to use the model directly within the EC2 instance
+### in case you want to use the model directly within the EC2 instance, you can move the model.tar.gz file to your EC2 instance from the corresponding output folder of the sagemaker instance and unzip it to obtain the model.pth file
 
 ![image](https://github.com/user-attachments/assets/a8d127f5-8dc5-4168-b14a-c49a2b72f94d)
 
@@ -93,6 +92,10 @@ The project utilizes a serverless architecture on AWS, leveraging the following 
 ### Connect the Redshift table to Quicksight to generate Real Time Visualization for Analysis and Monitoring
 
 ![image](https://github.com/user-attachments/assets/c9851ced-04d3-4c4f-b71f-2e350a6dff4c)
+
+### Project Cost ( this excludes redhsift and quicksight cost becase my account had credits left for those services - probably used 5$ worth of those )
+
+![image](https://github.com/user-attachments/assets/ffddb3be-a288-47cd-add4-b10da6f5452c)
 
 ## Features
 
