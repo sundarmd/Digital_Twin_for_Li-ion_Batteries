@@ -1,7 +1,7 @@
 import json
 import time
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
-import torch
+#import torch
 import numpy as np
 import pandas as pd
 import boto3
@@ -22,10 +22,15 @@ REDSHIFT_HOST = "default-workgroup.522814719181.eu-north-1.redshift-serverless.a
 REDSHIFT_PORT = 5439
 REDSHIFT_DB = "dev"
 
-# Load your trained model
+# Try to import torch and load the model
 try:
+    import torch
     model = torch.load('model.pth')
     model.eval()
+    print("Model loaded successfully")
+except ImportError:
+    print("Torch not installed. Prediction will be skipped.")
+    model = None
 except Exception as e:
     print(f"Failed to load model: {e}")
     model = None
@@ -57,6 +62,27 @@ def connect_to_redshift():
         print(f"Error connecting to Redshift: {e}")
         return None
 
+def insert_into_redshift(conn, data, data_type):
+    with conn.cursor() as cur:
+        query = """
+        INSERT INTO battery_data 
+        (timestamp, voltage_measured, current_measured, temperature_measured, 
+         current_charge, voltage_charge, capacity, data_type)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        values = (
+            data['timestamp'],
+            data['Voltage_measured'],
+            data['Current_measured'],
+            data['Temperature_measured'],
+            data['Current_charge'],
+            data['Voltage_charge'],
+            data.get('Capacity', None),  # Use None if Capacity is not present
+            data_type
+        )
+        cur.execute(query, values)
+    conn.commit()
+
 def preprocess_data(data, sequence_length=10):
     features = ['Voltage_measured', 'Current_measured', 'Temperature_measured', 'Current_charge', 'Voltage_charge']
     df = pd.DataFrame([data])
@@ -67,10 +93,10 @@ def preprocess_data(data, sequence_length=10):
     else:
         input_data = input_data[-sequence_length:]
     
-    return torch.FloatTensor(input_data).unsqueeze(0)
+    return torch.FloatTensor(input_data).unsqueeze(0) if model else None
 
 def predict(model, input_data):
-    if model is None:
+    if model is None or input_data is None:
         return None
     try:
         with torch.no_grad():
@@ -79,29 +105,6 @@ def predict(model, input_data):
     except Exception as e:
         print(f"Prediction failed: {e}")
         return None
-
-def insert_into_redshift(conn, data, data_type):
-    with conn.cursor() as cur:
-        query = """
-        INSERT INTO battery_data 
-        (timestamp, voltage_measured, current_measured, temperature_measured, 
-         current_charge, voltage_charge, capacity, data_type)
-        VALUES %s
-        """
-        values = [
-            (
-                data['timestamp'],
-                data['Voltage_measured'],
-                data['Current_measured'],
-                data['Temperature_measured'],
-                data['Current_charge'],
-                data['Voltage_charge'],
-                data.get('Capacity', None),  # Use None if Capacity is not present
-                data_type
-            )
-        ]
-        execute_values(cur, query, values)
-    conn.commit()
 
 def message_callback(client, userdata, message):
     payload = json.loads(message.payload.decode('utf-8'))
