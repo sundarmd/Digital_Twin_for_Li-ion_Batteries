@@ -8,7 +8,6 @@
 4. [Setup Instructions](#setup-instructions)
 5. [Features](#features)
 6. [Future Enhancements](#future-enhancements)
-7. [Project Cost](#project-cost)
 
 ## Project Overview
 
