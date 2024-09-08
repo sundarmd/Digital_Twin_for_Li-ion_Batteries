@@ -37,3 +37,7 @@
 
 ![image](https://github.com/user-attachments/assets/c9851ced-04d3-4c4f-b71f-2e350a6dff4c)
 
+### Project Cost ( this excludes redhsift and quicksight cost becase my account had credits left for those services - probably used 5$ worth of those )
+
+![image](https://github.com/user-attachments/assets/ffddb3be-a288-47cd-add4-b10da6f5452c)
+
