@@ -36,6 +36,8 @@ The project utilizes a serverless architecture on AWS, leveraging the following 
 - Amazon S3
 - Amazon EC2
 
+![image](https://github.com/user-attachments/assets/7005b734-ed69-4844-bf32-988b12dc5e84)
+[click here to know how to create diagrams like this](https://github.com/sundarmd/Standalone-Visualizations/blob/main/Digital%20Twin%20for%20Li%20ion%20Batteries/Digital_Twin_Architecture.ipynb)
 
 ## Components
 
