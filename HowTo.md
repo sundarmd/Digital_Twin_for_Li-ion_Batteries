@@ -11,7 +11,7 @@
 ![image](https://github.com/user-attachments/assets/e4a9368c-f0f6-4874-b808-dac197a5c890)
 
 
-### Move the model.tar.gz file to your EC2 instance from the corresponding output folder of the sagemaker instance and unzip it to obtain the model.pth file
+### Move the model.tar.gz file to your EC2 instance from the corresponding output folder of the sagemaker instance and unzip it to obtain the model.pth file in case you want to use the model directly within the EC2 instance
 
 ![image](https://github.com/user-attachments/assets/a8d127f5-8dc5-4168-b14a-c49a2b72f94d)
 
@@ -35,4 +35,5 @@
 
 ### Connect the Redshift table to Quicksight to generate Real Time Visualization for Analysis and Monitoring
 
-![image](https://github.com/user-attachments/assets/02459824-114a-4cd3-9920-21f5fc938472)
+![image](https://github.com/user-attachments/assets/c9851ced-04d3-4c4f-b71f-2e350a6dff4c)
+
