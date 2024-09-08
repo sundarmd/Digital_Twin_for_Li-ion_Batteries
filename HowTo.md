@@ -31,5 +31,5 @@
 
 ### Verify the data being loaded in the Redshift table
 
-![image](https://github.com/user-attachments/assets/742f7a61-b263-49ca-92a7-13c9aed1097a)
+![image](https://github.com/user-attachments/assets/6055edb1-25ec-4312-983f-a64c68bac2c9)
 
