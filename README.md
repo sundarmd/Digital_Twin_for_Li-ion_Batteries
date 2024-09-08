@@ -6,12 +6,9 @@
 2. [Architecture](#architecture)
 3. [Components](#components)
 4. [Setup Instructions](#setup-instructions)
-5. [Data Flow](#data-flow)
-6. [Machine Learning Model](#machine-learning-model)
-7. [Visualizations](#visualizations)
-8. [Deployment](#deployment)
-9. [Monitoring and Maintenance](#monitoring-and-maintenance)
-10. [Future Enhancements](#future-enhancements)
+5. [Features](#features)
+6. [Future Enhancements](#future-enhancements)
+7. [Project Cost](#project-cost)
 
 ## Project Overview
 
@@ -93,11 +90,13 @@ The project utilizes a serverless architecture on AWS, leveraging the following 
 
 ![image](https://github.com/user-attachments/assets/c9851ced-04d3-4c4f-b71f-2e350a6dff4c)
 
-### Project Cost ( this excludes redhsift and quicksight cost becase my account had credits left for those services - probably used 5$ worth of those )
-
-![image](https://github.com/user-attachments/assets/ffddb3be-a288-47cd-add4-b10da6f5452c)
 
 ## Features
+
+### Data Processing and Machine Learning
+- Real-time data ingestion from simulated IoT devices
+- Machine learning model trained on SageMaker for battery life prediction
+- Data processing on EC2 instance
 
 ### Visualizations
 
