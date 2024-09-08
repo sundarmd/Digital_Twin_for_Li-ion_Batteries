@@ -29,4 +29,7 @@
 
 ![image](https://github.com/user-attachments/assets/3fae0879-58f3-4119-807b-6b0bfe825e0b)
 
+### Verify the data being loaded in the Redshift table
+
+![image](https://github.com/user-attachments/assets/742f7a61-b263-49ca-92a7-13c9aed1097a)
 
