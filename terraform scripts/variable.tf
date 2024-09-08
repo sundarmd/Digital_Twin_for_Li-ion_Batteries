@@ -1,135 +1,71 @@
-# General
-variable "project_name" {
-  description = "Name of the project, used in resource naming"
-  default     = "battery-digital-twin"
-}
-
-variable "region" {
-  description = "AWS region to deploy resources"
+variable "aws_region" {
+  description = "The AWS region to deploy resources"
+  type        = string
   default     = "eu-north-1"
 }
 
-# VPC and Networking
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  default     = "10.0.0.0/16"
-}
-
-variable "public_subnet_cidrs" {
-  description = "CIDR blocks for the public subnets"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
-
-variable "private_subnet_cidrs" {
-  description = "CIDR blocks for the private subnets"
-  type        = list(string)
-  default     = ["10.0.10.0/24", "10.0.11.0/24"]
-}
-
-# ECS
-variable "ecs_task_cpu" {
-  description = "CPU units for the ECS task"
-  default     = "256"
-}
-
-variable "ecs_task_memory" {
-  description = "Memory for the ECS task"
-  default     = "512"
-}
-
-# RDS
-variable "db_instance_class" {
-  description = "Instance class for the RDS instance"
-  default     = "db.t3.micro"
-}
-
-variable "db_allocated_storage" {
-  description = "Allocated storage for the RDS instance in GB"
-  default     = 20
-}
-
-variable "db_engine_version" {
-  description = "Engine version for the RDS instance"
-  default     = "13.7"
-}
-
-variable "db_username" {
-  description = "Username for the database"
-  default     = "admin"
-}
-
-variable "db_password" {
-  description = "Password for the database"
+variable "project_name" {
+  description = "The name of the project, used as a prefix for many resources"
   type        = string
-  sensitive   = true
+  default     = "digitaltwinbattery"
 }
 
-# ElastiCache
-variable "cache_node_type" {
-  description = "Node type for the ElastiCache cluster"
-  default     = "cache.t3.micro"
+variable "ec2_instance_type" {
+  description = "The instance type for the EC2 data processor"
+  type        = string
+  default     = "m5.xlarge"
 }
 
-variable "cache_engine_version" {
-  description = "Engine version for the ElastiCache cluster"
-  default     = "6.x"
+variable "ec2_ami_id" {
+  description = "The AMI ID for the EC2 instance"
+  type        = string
+  default     = "ami-XXXXXXXXXXXXXXX"  # Replace with actual AMI ID
 }
 
-# Lambda
-variable "lambda_runtime" {
-  description = "Runtime for the Lambda function"
-  default     = "python3.8"
+variable "redshift_node_type" {
+  description = "The node type for the Redshift cluster"
+  type        = string
+  default     = "dc2.large"
 }
 
-# SageMaker
-variable "sagemaker_notebook_instance_type" {
-  description = "Instance type for the SageMaker notebook"
-  default     = "ml.t2.medium"
+variable "redshift_cluster_type" {
+  description = "The cluster type for Redshift"
+  type        = string
+  default     = "single-node"
 }
 
-# S3
-variable "s3_force_destroy" {
-  description = "Boolean to force destruction of S3 buckets"
-  default     = false
+variable "redshift_database_name" {
+  description = "The name of the initial database in Redshift"
+  type        = string
+  default     = "dev"
 }
 
-# MSK (Kafka)
-variable "kafka_version" {
-  description = "Version of Kafka to use for MSK cluster"
-  default     = "2.8.1"
+variable "redshift_master_username" {
+  description = "The master username for Redshift"
+  type        = string
+  default     = "XXXXXXXXXXXX"  # Replace with actual username
 }
 
-variable "kafka_instance_type" {
-  description = "Instance type for the MSK brokers"
-  default     = "kafka.t3.small"
+variable "redshift_master_password" {
+  description = "The master password for Redshift"
+  type        = string
+  default     = "XXXXXXXXXXXX"  # Replace with actual password
 }
 
-# Cognito
-variable "cognito_password_min_length" {
-  description = "Minimum length for Cognito user pool passwords"
-  default     = 8
+variable "sagemaker_instance_type" {
+  description = "The instance type for the SageMaker notebook"
+  type        = string
+  default     = "ml.m5.xlarge"
 }
 
-# KMS
-variable "kms_deletion_window_in_days" {
-  description = "Duration in days after which the KMS key is deleted after destruction of the resource"
-  default     = 30
+variable "quicksight_edition" {
+  description = "The edition of QuickSight to use"
+  type        = string
+  default     = "ENTERPRISE"
 }
 
-# CloudWatch
-variable "log_retention_in_days" {
-  description = "Number of days to retain CloudWatch logs"
-  default     = 30
+variable "quicksight_notification_email" {
+  description = "The email address for QuickSight notifications"
+  type        = string
+  default     = "sundardas80XXXXXXX"  # Replace with actual email
 }
-
-# Tags
-variable "common_tags" {
-  description = "Common tags to be applied to all resources"
-  type        = map(string)
-  default     = {
-    Project     = "Battery Digital Twin"
-    Environment = "Development"
-  }
-}
-
