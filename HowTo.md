@@ -6,7 +6,7 @@
 
 ![image](https://github.com/user-attachments/assets/04285565-56e6-4d6c-b3ee-97aea6ac61f6)
 
-### Train the model with historical data stored in S3 bucket and Deploy it to the endpoint
+### Train the model with historical data stored in S3 bucket
 
 ![image](https://github.com/user-attachments/assets/e4a9368c-f0f6-4874-b808-dac197a5c890)
 
