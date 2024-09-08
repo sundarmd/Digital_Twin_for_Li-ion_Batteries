@@ -33,3 +33,6 @@
 
 ![image](https://github.com/user-attachments/assets/6055edb1-25ec-4312-983f-a64c68bac2c9)
 
+### Connect the Redshift table to Quicksight to generate Real Time Visualization for Analysis and Monitoring
+
+![image](https://github.com/user-attachments/assets/02459824-114a-4cd3-9920-21f5fc938472)
