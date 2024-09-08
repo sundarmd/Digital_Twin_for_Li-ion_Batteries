@@ -4,27 +4,31 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 import torch
 import numpy as np
 import pandas as pd
+import boto3
+import redshift_connector
 import psycopg2
 from psycopg2.extras import execute_values
 
 # AWS IoT configuration
-ENDPOINT = "a14XXXXXXXXXXX9-ats.iot.eu-north-1.amazonaws.com"
+ENDPOINT = "a14bm3z8qkqt69-ats.iot.eu-north-1.amazonaws.com"
 CLIENT_ID = "batterydatasimulator"
-PATH_TO_CERT = "bdd71e13313XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX0499454814b3-certificate.pem.crt"
-PATH_TO_KEY = "bdd71e13313dXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX9454814b3-private.pem.key"
+PATH_TO_CERT = "bdd71e13313d037b336a63e4221b9ed6d563e4914cc7236e22030499454814b3-certificate.pem.crt"
+PATH_TO_KEY = "bdd71e13313d037b336a63e4221b9ed6d563e4914cc7236e22030499454814b3-private.pem.key"
 PATH_TO_ROOT = "AmazonRootCA1.pem"
 TOPIC = "battery/data"
 
 # Redshift configuration
-REDSHIFT_HOST = "your-redshift-cluster.amazonaws.com"
+REDSHIFT_HOST = "default-workgroup.522814719181.eu-north-1.redshift-serverless.amazonaws.com"
 REDSHIFT_PORT = 5439
-REDSHIFT_DB = "your_database"
-REDSHIFT_USER = "your_username"
-REDSHIFT_PASSWORD = "your_password"
+REDSHIFT_DB = "dev"
 
 # Load your trained model
-model = torch.load('model.pth')
-model.eval()
+try:
+    model = torch.load('model.pth')
+    model.eval()
+except Exception as e:
+    print(f"Failed to load model: {e}")
+    model = None
 
 def create_mqtt_client():
     mqtt_client = AWSIoTMQTTClient(CLIENT_ID)
@@ -38,14 +42,20 @@ def create_mqtt_client():
     return mqtt_client
 
 def connect_to_redshift():
-    conn = psycopg2.connect(
-        host=REDSHIFT_HOST,
-        port=REDSHIFT_PORT,
-        dbname=REDSHIFT_DB,
-        user=REDSHIFT_USER,
-        password=REDSHIFT_PASSWORD
-    )
-    return conn
+    try:
+        conn = redshift_connector.connect(
+            host=REDSHIFT_HOST,
+            database=REDSHIFT_DB,
+            port=REDSHIFT_PORT,
+            iam=True,
+            cluster_identifier='default-workgroup',
+            region='eu-north-1'
+        )
+        print("Connected to Redshift successfully!")
+        return conn
+    except Exception as e:
+        print(f"Error connecting to Redshift: {e}")
+        return None
 
 def preprocess_data(data, sequence_length=10):
     features = ['Voltage_measured', 'Current_measured', 'Temperature_measured', 'Current_charge', 'Voltage_charge']
@@ -60,9 +70,15 @@ def preprocess_data(data, sequence_length=10):
     return torch.FloatTensor(input_data).unsqueeze(0)
 
 def predict(model, input_data):
-    with torch.no_grad():
-        output = model(input_data)
-    return output.numpy()
+    if model is None:
+        return None
+    try:
+        with torch.no_grad():
+            output = model(input_data)
+        return output.numpy()
+    except Exception as e:
+        print(f"Prediction failed: {e}")
+        return None
 
 def insert_into_redshift(conn, data, data_type):
     with conn.cursor() as cur:
@@ -80,7 +96,7 @@ def insert_into_redshift(conn, data, data_type):
                 data['Temperature_measured'],
                 data['Current_charge'],
                 data['Voltage_charge'],
-                data['Capacity'],
+                data.get('Capacity', None),  # Use None if Capacity is not present
                 data_type
             )
         ]
@@ -93,18 +109,24 @@ def message_callback(client, userdata, message):
     
     # Insert simulated data
     insert_into_redshift(redshift_conn, payload, 'simulated')
+    print("Inserted simulated data into Redshift")
     
-    processed_input = preprocess_data(payload)
-    prediction = predict(model, processed_input)
-    
-    # Create predicted data dictionary
-    predicted_data = payload.copy()
-    predicted_data['Capacity'] = prediction[0][0]  # Assuming the prediction is the capacity
-    
-    # Insert predicted data
-    insert_into_redshift(redshift_conn, predicted_data, 'predicted')
-    
-    print(f"Inserted simulated and predicted data into Redshift")
+    if model is not None:
+        processed_input = preprocess_data(payload)
+        prediction = predict(model, processed_input)
+        
+        if prediction is not None:
+            # Create predicted data dictionary
+            predicted_data = payload.copy()
+            predicted_data['Capacity'] = prediction[0][0]  # Assuming the prediction is the capacity
+            
+            # Insert predicted data
+            insert_into_redshift(redshift_conn, predicted_data, 'predicted')
+            print("Inserted predicted data into Redshift")
+        else:
+            print("Skipped inserting predicted data due to prediction failure")
+    else:
+        print("Skipped prediction step as model is not available")
 
 if __name__ == "__main__":
     mqtt_client = create_mqtt_client()
@@ -113,7 +135,9 @@ if __name__ == "__main__":
     print("Connected!")
 
     redshift_conn = connect_to_redshift()
-    print("Connected to Redshift")
+    if redshift_conn is None:
+        print("Failed to connect to Redshift. Exiting.")
+        exit(1)
 
     mqtt_client.subscribe(TOPIC, 1, message_callback)
     print(f"Subscribed to topic: {TOPIC}")
